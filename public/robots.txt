@@ -1,0 +1,3 @@
+# A sample site for the OHRR board. The real festival site is midwestbunfest.org.
+User-agent: *
+Disallow: /
