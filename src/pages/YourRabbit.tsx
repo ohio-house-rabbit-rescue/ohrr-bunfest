@@ -79,6 +79,7 @@ export default function YourRabbit() {
                     <Card className="h-full">
                       <h3 className="font-display text-lg font-extrabold text-ink">{v.name}</h3>
                       {v.doctors && <p className="text-base text-slate-700">{v.doctors}</p>}
+                      {v.rhdv2_note && <p className="mt-1 text-base font-semibold text-slate-800">{v.rhdv2_note}</p>}
                       {address && (
                         <p className="mt-2 text-base">
                           <a href={directionsHref(address)} {...ext} className={linkText}>

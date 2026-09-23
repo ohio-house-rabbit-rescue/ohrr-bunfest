@@ -751,6 +751,8 @@ export interface VaccineVet {
   phone: string | null
   website: string | null
   notes: string | null
+  /** How to get the vaccine there ("By appointment — call …"). */
+  rhdv2_note: string | null
 }
 
 /** Practices OHRR has marked as giving the RHDV2 vaccine. */
@@ -759,7 +761,7 @@ export function useRhdv2Vets(): Loadable<VaccineVet[]> {
     rows<VaccineVet>(
       supabase
         .from('vets')
-        .select('id,name,doctors,address,city,phone,website,notes')
+        .select('id,name,doctors,address,city,phone,website,notes,rhdv2_note')
         .eq('is_published', true)
         .eq('gives_rhdv2', true)
         .order('sort_order'),
