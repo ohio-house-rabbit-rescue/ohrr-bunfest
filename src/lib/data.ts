@@ -60,8 +60,15 @@ export interface Loadable<T> {
 export function useLoad<T>(key: string | null, fn: () => Promise<T>): Loadable<T> {
   const [, rerender] = useReducer((n: number) => n + 1, 0)
   const entry = key ? start(key, fn) : null
+  const shown = entry?.status
   useEffect(() => {
-    if (!entry || entry.status !== 'loading') return
+    if (!entry) return
+    // It finished between drawing and now: draw again with the result.
+    if (entry.status !== shown) {
+      rerender()
+      return
+    }
+    if (entry.status !== 'loading') return
     let active = true
     entry.promise.then(() => {
       if (active) rerender()
@@ -69,7 +76,7 @@ export function useLoad<T>(key: string | null, fn: () => Promise<T>): Loadable<T
     return () => {
       active = false
     }
-  }, [entry])
+  }, [entry, shown])
   const retry = useCallback(() => {
     if (!key) return
     cache.delete(key)
