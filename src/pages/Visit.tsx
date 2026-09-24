@@ -4,6 +4,7 @@ import { Card, Chip, Container, H2, LoadError, Loading, PageTitle, PrintButton, 
 import { useFestival, usePages } from '../lib/data'
 import { clockOf, longDate } from '../lib/format'
 import { directionsHref, ext } from '../lib/links'
+import { downloadFestivalIcs, googleFestivalUrl } from '../lib/calendar'
 
 // Everything Alan needs the week before, on one printable page: the day, the
 // address and directions, parking, the prices, the tickets, the rabbit rule
@@ -41,6 +42,15 @@ export default function Visit() {
                 <br />
                 {clockOf(fe.startsAt)}
                 {fe.endsAt ? ` – ${clockOf(fe.endsAt)}` : ''}
+                <span className="no-print mt-1 block text-base">
+                  <button type="button" onClick={() => downloadFestivalIcs(fe)} className={linkText}>
+                    Add to calendar
+                  </button>
+                  {' · '}
+                  <a href={googleFestivalUrl(fe)} {...ext} className={linkText}>
+                    Google Calendar
+                  </a>
+                </span>
               </span>
             </p>
             {place && (

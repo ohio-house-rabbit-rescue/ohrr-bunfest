@@ -6,6 +6,7 @@ import { useFeatures, useFestival, useSessions, useSponsors, type Festival } fro
 import { clockOf, daysUntil, longDate } from '../lib/format'
 import { OHRR_APP, OHRR_SITE, directionsHref, ext } from '../lib/links'
 import { iconOf } from '../lib/icons'
+import { downloadFestivalIcs, googleFestivalUrl } from '../lib/calendar'
 
 // The five-second test from the design brief: before the artwork, before the
 // sponsors, a visitor sees what it is, the date, the place, the price, whether
@@ -78,6 +79,18 @@ function SixAnswers({ festival: fe, over }: { festival: Festival; over: boolean 
           <dl className="mt-3 divide-y divide-slate-200 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
             <Answer icon="calendar" label="When">
               {when}
+              {!over && (
+                <>
+                  {' · '}
+                  <button type="button" onClick={() => downloadFestivalIcs(fe)} className={linkText}>
+                    Add to calendar
+                  </button>
+                  {' · '}
+                  <a href={googleFestivalUrl(fe)} {...ext} className={linkText}>
+                    Google Calendar
+                  </a>
+                </>
+              )}
             </Answer>
             <Answer icon="mappin" label="Where">
               {place || 'To be announced'}
