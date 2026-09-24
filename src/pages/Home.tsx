@@ -4,7 +4,7 @@ import { Icon, type IconName } from '../components/icons'
 import { Card, Container, H2, LoadError, Loading, Prose, SmartLink, btn, linkText } from '../components/ui'
 import { useFeatures, useFestival, useSessions, useSponsors, type Festival } from '../lib/data'
 import { clockOf, daysUntil, longDate } from '../lib/format'
-import { OHRR_APP, OHRR_SITE, directionsHref, ext } from '../lib/links'
+import { OHRR_APP, OHRR_SITE, directionsHref, ext, externalHref } from '../lib/links'
 import { iconOf } from '../lib/icons'
 import { downloadFestivalIcs, googleFestivalUrl } from '../lib/calendar'
 
@@ -227,22 +227,61 @@ function Talks({ year }: { year: number }) {
   )
 }
 
+// The sponsors as a wall of logos, each a link to the sponsor's own site
+// (OHRR, 2026-09-24: a list of names "is a mass of words"). Every tile is the
+// same size; a sponsor without a logo shows its name in the tile. The lead
+// sponsor's tile is four tiles big. Same wall as the OHRR website's BunFest page.
 function Sponsors() {
   const s = useSponsors()
   const list = s.data ?? []
   if (list.length === 0) return null
-  const lead = list.filter((x) => x.tier === 'presenting')
-  const rest = list.filter((x) => x.tier !== 'presenting')
   return (
     <Container className="mt-12">
       <H2>Thank you to our sponsors</H2>
-      {lead.map((x) => (
-        <p key={x.id} className="mt-3 text-lg text-slate-800">
-          Lead sponsor: <strong className="text-ink">{x.name}</strong>
-        </p>
-      ))}
-      {rest.length > 0 && <p className="mt-2 text-base text-slate-700">{rest.map((x) => x.name).join(' · ')}</p>}
-      <Link to="/sponsors" className={`${linkText} mt-3 inline-block py-1`}>
+      <ul className="mt-5 grid grid-flow-dense auto-rows-[6rem] grid-cols-2 gap-3 sm:auto-rows-[7rem] sm:grid-cols-4 lg:grid-cols-6">
+        {list.map((x) => {
+          const lead = x.tier === 'presenting'
+          const inner = (
+            <>
+              {lead && (
+                <span className="absolute left-3 top-2.5 text-sm font-extrabold uppercase tracking-wide text-fest-dark">
+                  Lead sponsor
+                </span>
+              )}
+              {x.logoUrl ? (
+                <img src={x.logoUrl} alt={x.name} loading="lazy" className="h-full w-full object-contain" />
+              ) : (
+                <span className={`text-center font-display font-extrabold leading-snug text-ink ${lead ? 'text-2xl' : 'text-base'}`}>
+                  {x.name}
+                </span>
+              )}
+            </>
+          )
+          const tile = `relative flex h-full items-center justify-center rounded-2xl border border-slate-200 bg-white ${
+            lead ? 'px-6 pb-4 pt-9' : 'p-3.5'
+          }`
+          return (
+            <li key={x.id} className={lead ? 'col-span-2 row-span-2' : ''}>
+              {x.website ? (
+                <a
+                  href={externalHref(x.website)}
+                  {...ext}
+                  title={x.name}
+                  aria-label={`${x.name} (opens their website)`}
+                  className={`${tile} transition hover:border-brand-blue hover:shadow-md`}
+                >
+                  {inner}
+                </a>
+              ) : (
+                <div title={x.name} className={tile}>
+                  {inner}
+                </div>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+      <Link to="/sponsors" className={`${linkText} mt-4 inline-block py-1`}>
         About our sponsors
       </Link>
     </Container>
