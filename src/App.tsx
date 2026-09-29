@@ -12,6 +12,9 @@ import Rescues from './pages/Rescues'
 import Sponsors from './pages/Sponsors'
 import EventMap from './pages/EventMap'
 import Auction from './pages/Auction'
+import AuctionItem from './pages/AuctionItem'
+import AuctionRegister from './pages/AuctionRegister'
+import AuctionMe from './pages/AuctionMe'
 import Volunteer from './pages/Volunteer'
 import Past from './pages/Past'
 import NotFound from './pages/NotFound'
@@ -43,6 +46,11 @@ export default function App() {
           <Route path="sponsors" element={<Sponsors />} />
           <Route path="map" element={<EventMap />} />
           <Route path="auction" element={<Auction />} />
+          {/* The named auction pages come before the item's id. */}
+          <Route path="auction/register" element={<AuctionRegister />} />
+          <Route path="auction/me" element={<AuctionMe />} />
+          <Route path="auction/me/:token" element={<AuctionMe />} />
+          <Route path="auction/:id" element={<AuctionItem />} />
           <Route path="volunteer" element={<Volunteer />} />
           <Route path="past" element={<Past />} />
           <Route path="*" element={<NotFound />} />

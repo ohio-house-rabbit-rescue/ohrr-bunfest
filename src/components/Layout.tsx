@@ -14,6 +14,7 @@ const NAV = [
   { to: '/festival', label: 'At the festival' },
   { to: '/vendors', label: 'Vendors' },
   { to: '/rescues', label: 'Rescues' },
+  { to: '/auction', label: 'Auction' },
   { to: '/map', label: 'Map' },
 ]
 
@@ -22,7 +23,6 @@ const ALL_PAGES = [
   ...NAV,
   { to: '/speakers', label: 'Speakers' },
   { to: '/sponsors', label: 'Sponsors' },
-  { to: '/auction', label: 'Silent auction' },
   { to: '/volunteer', label: 'Volunteer' },
   { to: '/past', label: 'Past years' },
 ]
