@@ -51,10 +51,12 @@ export default function App() {
             <Route path="auction" element={<Auction />} />
             {/* The named auction pages come before the item's id. */}
             <Route path="auction/register" element={<AuctionRegister />} />
-            <Route path="auction/me" element={<AuctionMe />} />
-            <Route path="auction/me/:token" element={<AuctionMe />} />
             <Route path="auction/:id" element={<AuctionItem />} />
           </Route>
+          {/* A bidder's own page stays open while the auction is switched off, so winners can still see what they owe.
+              React Router ranks the fixed "me" above ":id", so the order here does not matter. */}
+          <Route path="auction/me" element={<AuctionMe />} />
+          <Route path="auction/me/:token" element={<AuctionMe />} />
           <Route path="volunteer" element={<Volunteer />} />
           <Route path="past" element={<Past />} />
           <Route path="*" element={<NotFound />} />
