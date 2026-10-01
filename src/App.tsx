@@ -15,6 +15,7 @@ import Auction from './pages/Auction'
 import AuctionItem from './pages/AuctionItem'
 import AuctionRegister from './pages/AuctionRegister'
 import AuctionMe from './pages/AuctionMe'
+import { AuctionGate } from './components/auction'
 import Volunteer from './pages/Volunteer'
 import Past from './pages/Past'
 import NotFound from './pages/NotFound'
@@ -45,12 +46,15 @@ export default function App() {
           <Route path="rescues" element={<Rescues />} />
           <Route path="sponsors" element={<Sponsors />} />
           <Route path="map" element={<EventMap />} />
-          <Route path="auction" element={<Auction />} />
-          {/* The named auction pages come before the item's id. */}
-          <Route path="auction/register" element={<AuctionRegister />} />
-          <Route path="auction/me" element={<AuctionMe />} />
-          <Route path="auction/me/:token" element={<AuctionMe />} />
-          <Route path="auction/:id" element={<AuctionItem />} />
+          {/* Every auction page shows only while OHRR has the Silent Auction switched on. */}
+          <Route element={<AuctionGate />}>
+            <Route path="auction" element={<Auction />} />
+            {/* The named auction pages come before the item's id. */}
+            <Route path="auction/register" element={<AuctionRegister />} />
+            <Route path="auction/me" element={<AuctionMe />} />
+            <Route path="auction/me/:token" element={<AuctionMe />} />
+            <Route path="auction/:id" element={<AuctionItem />} />
+          </Route>
           <Route path="volunteer" element={<Volunteer />} />
           <Route path="past" element={<Past />} />
           <Route path="*" element={<NotFound />} />

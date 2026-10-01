@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Icon } from '../components/icons'
 import { Card, Container, LoadError, Loading, Note, PageTitle, btn, linkText } from '../components/ui'
-import { Choice, Field, Message } from '../components/auction'
+import { AuctionClosed, Choice, Field, Message } from '../components/auction'
 import CardSetup from '../components/CardSetup'
 import { useFestival } from '../lib/data'
 import { remember, safeNext, useCatalog, useRemembered } from '../lib/auction'
@@ -46,6 +46,7 @@ export default function AuctionRegister() {
       </>
     )
   }
+  if (!c.catalog.enabled) return <AuctionClosed />
   if (!settings || !settings.bidding_enabled || !settings.stripe_publishable_key) {
     return (
       <>

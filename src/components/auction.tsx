@@ -1,11 +1,54 @@
-// The pieces the silent-auction pages share: the "how it works" box, an
-// item's photo, its shipping line, plain form fields and the messages a
-// bidder is told after pressing a button.
+// The pieces the silent-auction pages share: the on/off gate, the "how it
+// works" box, an item's photo, its shipping line, plain form fields and the
+// messages a bidder is told after pressing a button.
 import { useId, type InputHTMLAttributes, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Outlet } from 'react-router-dom'
 import { Icon } from './icons'
-import { Card, btn, linkText } from './ui'
+import { Card, Container, Loading, Note, PageTitle, btn, linkText } from './ui'
+import { useSilentAuctionOn } from '../lib/data'
+import { itemPhotos } from '../lib/auction'
 import { fmtWhen, money, type AuctionItem, type AuctionSettings, type RememberedBidder } from '../lib/auctionClient'
+
+/* ------------------------------------------------------- the on/off switch */
+
+/** What every auction address shows while OHRR has the Silent Auction switched off. */
+export function AuctionClosed() {
+  return (
+    <>
+      <PageTitle title="Silent auction" icon="award" />
+      <Container className="mt-8 max-w-2xl space-y-4">
+        <Note>
+          <strong>The silent auction isn't open right now.</strong>
+        </Note>
+        <Link to="/" className={btn.blue}>
+          <Icon name="arrowLeft" size={20} /> Back to Midwest BunFest
+        </Link>
+      </Container>
+    </>
+  )
+}
+
+/**
+ * Around every auction route: the page itself while the Silent Auction is on,
+ * the closed page while it's off, and only a loading line while the switch is
+ * read — so nothing about the auction shows and then vanishes.
+ */
+export function AuctionGate() {
+  const on = useSilentAuctionOn()
+  if (on === undefined) {
+    return (
+      <Container>
+        <Loading what="the silent auction" />
+      </Container>
+    )
+  }
+  return on ? <Outlet /> : <AuctionClosed />
+}
+
+/** Show `children` only once the Silent Auction switch is read and on. */
+export function IfAuctionOn({ children }: { children: ReactNode }) {
+  return useSilentAuctionOn() === true ? <>{children}</> : null
+}
 
 /** The rules of online bidding, in plain words — true whether bidding is open yet or not. */
 export function HowBiddingWorks({ settings }: { settings: AuctionSettings | null }) {
@@ -103,9 +146,11 @@ export function BidderBar({
   return null
 }
 
+/** The item's cover photo (lists and cards show only the cover), or a plain tile. */
 export function ItemPhoto({ item, className = 'aspect-[4/3] w-full' }: { item: AuctionItem; className?: string }) {
-  return item.photo_url ? (
-    <img src={item.photo_url} alt={item.title} loading="lazy" className={`${className} object-cover`} />
+  const cover = itemPhotos(item)[0]
+  return cover ? (
+    <img src={cover} alt={item.title} loading="lazy" className={`${className} object-cover`} />
   ) : (
     <div aria-hidden="true" className={`${className} flex items-center justify-center bg-fest-50 text-fest-dark`}>
       <Icon name="gift" size={48} />

@@ -17,8 +17,9 @@ import {
   linkText,
 } from '../components/ui'
 import { PastYearNote, YearPicker } from '../components/YearPicker'
-import { useAuction, useFeatures, useFestival, usePages, useShownYear, type FestivalPage } from '../lib/data'
-import { destOf, directionsHref, ext, telHref } from '../lib/links'
+import { IfAuctionOn } from '../components/auction'
+import { useAuction, useFeatures, useFestival, usePages, useShownYear, useSilentAuctionOn, type FestivalPage } from '../lib/data'
+import { destOf, directionsHref, ext, isAuctionLink, telHref } from '../lib/links'
 import { iconOf } from '../lib/icons'
 
 /** Where each festival page opens — its own page here, or /festival/<slug>. */
@@ -85,7 +86,9 @@ export function FestivalList() {
         )}
         {!isPast && (
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            <RowLink to="/auction">Silent auction items</RowLink>
+            <IfAuctionOn>
+              <RowLink to="/auction">Silent auction items</RowLink>
+            </IfAuctionOn>
             <RowLink to="/schedule">Talks & schedule</RowLink>
           </div>
         )}
@@ -103,6 +106,7 @@ export function FestivalPageView({ slug: fixed, extra }: { slug?: string; extra?
   const pages = usePages(year)
   const page = pages.data?.find((p) => p.slug === slug)
   const auction = useAuction(page?.feature === 'raffle' ? f.festival?.slug : undefined)
+  const auctionOn = useSilentAuctionOn() === true
 
   if (pages.error) return <LoadError retry={pages.retry} what="this page" />
   if (pages.loading) return <Loading />
@@ -124,6 +128,8 @@ export function FestivalPageView({ slug: fixed, extra }: { slug?: string; extra?
 
   const raffleDetails = auction.data?.settings.raffleDetails
   const c = page.contact
+  // A link to the silent auction shows only while it's switched on.
+  const related = page.related.filter((r) => auctionOn || !isAuctionLink(r.to))
 
   return (
     <>
@@ -207,11 +213,11 @@ export function FestivalPageView({ slug: fixed, extra }: { slug?: string; extra?
 
         {extra}
 
-        {page.related.length > 0 && (
+        {related.length > 0 && (
           <section className="no-print">
             <h2 className="font-display text-lg font-extrabold text-ink">{page.relatedLabel ?? 'Related'}</h2>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              {page.related.map((r) => (
+              {related.map((r) => (
                 <RowLink key={r.to} to={r.to} fromDatabase>
                   {r.label}
                 </RowLink>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Icon } from './icons'
 import { Container, btn, linkText } from './ui'
-import { useFestival, useOrg } from '../lib/data'
+import { useFestival, useOrg, useSilentAuctionOn } from '../lib/data'
 import { OFFICIAL_SITE, OHRR_APP, OHRR_SITE, OHRR_EMAIL_FALLBACK, STAFF_EDIT, ext } from '../lib/links'
 import { VERSION_LABEL } from '../lib/version'
 
@@ -26,6 +26,12 @@ const ALL_PAGES = [
   { to: '/volunteer', label: 'Volunteer' },
   { to: '/past', label: 'Past years' },
 ]
+
+/** The pages to list: the auction only once its switch is read and on (OHRR can switch it off). */
+function useShown<T extends { to: string }>(list: T[]): T[] {
+  const auctionOn = useSilentAuctionOn() === true
+  return auctionOn ? list : list.filter((n) => n.to !== '/auction')
+}
 
 function useScrollToTop() {
   const { pathname, hash } = useLocation()
@@ -53,6 +59,8 @@ function TicketsButton({ className = '', short = false }: { className?: string; 
 function Header() {
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
+  const nav = useShown(NAV)
+  const allPages = useShown(ALL_PAGES)
   useEffect(() => setOpen(false), [pathname])
 
   const navLink = ({ isActive }: { isActive: boolean }) =>
@@ -100,7 +108,7 @@ function Header() {
       {/* Desktop: every page in the menu is always visible — nothing opens on hover. */}
       <nav aria-label="Main" className="hidden border-t border-slate-100 md:block">
         <Container className="flex flex-wrap gap-1 py-2">
-          {NAV.map((n) => (
+          {nav.map((n) => (
             <NavLink key={n.to} to={n.to} className={navLink}>
               {n.label}
             </NavLink>
@@ -112,7 +120,7 @@ function Header() {
       {open && (
         <nav id="site-menu" aria-label="Main" className="border-t border-slate-100 md:hidden">
           <Container className="grid gap-1 py-3">
-            {ALL_PAGES.map((n) => (
+            {allPages.map((n) => (
               <NavLink key={n.to} to={n.to} className={navLink}>
                 {n.label}
               </NavLink>
@@ -128,6 +136,7 @@ function Header() {
 function Footer() {
   const { festival } = useFestival()
   const org = useOrg()
+  const allPages = useShown(ALL_PAGES)
   const email = org.data?.email ?? OHRR_EMAIL_FALLBACK
   return (
     <footer className="mt-16 border-t border-slate-200 bg-canvas">
@@ -135,7 +144,7 @@ function Footer() {
         <div>
           <h2 className="font-display text-lg font-extrabold text-ink">Every page</h2>
           <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 md:grid-cols-1">
-            {ALL_PAGES.map((n) => (
+            {allPages.map((n) => (
               <li key={n.to}>
                 <Link to={n.to} className={`${linkText} inline-block py-1`}>
                   {n.label}

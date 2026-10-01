@@ -2,9 +2,9 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Icon, type IconName } from '../components/icons'
 import { Card, Container, H2, LoadError, Loading, Prose, SmartLink, btn, linkText } from '../components/ui'
-import { useFeatures, useFestival, useSessions, useSponsors, type Festival } from '../lib/data'
+import { useFeatures, useFestival, useSessions, useSilentAuctionOn, useSponsors, type Festival } from '../lib/data'
 import { clockOf, daysUntil, longDate } from '../lib/format'
-import { OHRR_APP, OHRR_SITE, directionsHref, ext, externalHref } from '../lib/links'
+import { OHRR_APP, OHRR_SITE, directionsHref, ext, externalHref, isAuctionLink } from '../lib/links'
 import { iconOf } from '../lib/icons'
 import { downloadFestivalIcs, googleFestivalUrl } from '../lib/calendar'
 
@@ -162,13 +162,16 @@ function Answer({ icon, label, children }: { icon: IconName; label: string; chil
 
 function AtTheFestival({ year }: { year: number }) {
   const cards = useFeatures(year)
+  const auctionOn = useSilentAuctionOn()
   if (cards.error) return <LoadError retry={cards.retry} what="what's on" />
-  if (!cards.data || cards.data.length === 0) return null
+  // A card that opens the silent auction waits for its switch, and is left out while it's off.
+  const shown = (cards.data ?? []).filter((c) => auctionOn === true || !c.link || !isAuctionLink(c.link))
+  if (shown.length === 0) return null
   return (
     <Container className="mt-12">
       <H2>At the festival</H2>
       <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.data.map((c) => {
+        {shown.map((c) => {
           const inner = (
             <>
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-fest-50 text-fest-dark">

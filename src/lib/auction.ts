@@ -87,6 +87,15 @@ export interface CatalogState {
   items: AuctionItem[]
   /** True when the bidding functions answered; false = the plain item list (no bids, no prices). */
   live: boolean
+  /** False when auction_catalog() says the Silent Auction is switched off (update 38). */
+  enabled: boolean
+}
+
+/** An item's photos, cover first: photo_urls when there are any, else the one photo_url. */
+export function itemPhotos(item: Pick<AuctionItem, 'photo_url' | 'photo_urls'>): string[] {
+  const all = (Array.isArray(item.photo_urls) ? item.photo_urls : []).filter((u) => typeof u === 'string' && u.trim() !== '')
+  if (all.length > 0) return all
+  return item.photo_url ? [item.photo_url] : []
 }
 
 export interface CatalogRead {
@@ -116,6 +125,7 @@ export function fromListed(i: ListedItem): AuctionItem {
     donated_by: i.donatedBy,
     value_cents: i.valueCents,
     photo_url: i.photoUrl,
+    photo_urls: i.photoUrls ?? null,
     session: (SESSIONS as string[]).includes(i.session) ? (i.session as Session) : 'all-day',
     status: i.status === 'won' ? 'won' : 'available',
     won_kind: null,
@@ -150,8 +160,11 @@ export function useCatalog(slug: string | undefined): CatalogRead {
   const intro = listed.data?.settings.intro ?? null
 
   if (rpc.data) {
+    // Before update 38 the catalog carries only the cover; the plain read has every photo.
+    const photos = new Map((listed.data?.items ?? []).map((i) => [i.id, i.photoUrls ?? null]))
+    const items = (rpc.data.items ?? []).map((i) => (i.photo_urls !== undefined ? i : { ...i, photo_urls: photos.get(i.id) ?? null }))
     return {
-      catalog: { now: rpc.data.now, settings: rpc.data.settings, items: rpc.data.items, live: true },
+      catalog: { now: rpc.data.now, settings: rpc.data.settings, items, live: true, enabled: rpc.data.enabled !== false },
       prizes,
       intro,
       error: null,
@@ -163,7 +176,7 @@ export function useCatalog(slug: string | undefined): CatalogRead {
   const fallingBack = unavailable || !!rpc.error
   if (fallingBack && listed.data) {
     return {
-      catalog: { now: new Date().toISOString(), settings: null, items: listed.data.items.map(fromListed), live: false },
+      catalog: { now: new Date().toISOString(), settings: null, items: listed.data.items.map(fromListed), live: false, enabled: true },
       prizes,
       intro,
       error: null,

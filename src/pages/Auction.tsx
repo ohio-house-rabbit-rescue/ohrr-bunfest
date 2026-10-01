@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Icon } from '../components/icons'
 import { Chip, Container, H2, LoadError, Loading, Note, PageTitle, linkText } from '../components/ui'
-import { BidderBar, HowBiddingWorks, ItemPhoto, shipLine } from '../components/auction'
+import { AuctionClosed, BidderBar, HowBiddingWorks, ItemPhoto, shipLine } from '../components/auction'
 import { useFestival, type AuctionItem as ListedItem } from '../lib/data'
 import { useCatalog, useRemembered, useServerNow } from '../lib/auction'
 import { bidLine, closesIn, fmtWhen, money, type AuctionItem, type AuctionSettings } from '../lib/auctionClient'
@@ -38,6 +38,8 @@ export default function Auction() {
     return i < 0 ? 99 : i
   }
   sessions.sort((x, y) => rank(x) - rank(y))
+
+  if (cat && !cat.enabled) return <AuctionClosed />
 
   return (
     <>

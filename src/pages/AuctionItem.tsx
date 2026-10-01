@@ -2,11 +2,12 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Icon } from '../components/icons'
 import { Card, Chip, Container, H2, LoadError, Loading, Note, PageTitle, PrintButton, btn, linkText } from '../components/ui'
-import { ItemPhoto, Message, shipLine } from '../components/auction'
+import { AuctionClosed, ItemPhoto, Message, shipLine } from '../components/auction'
 import { confirmPaymentAction } from '../components/CardSetup'
+import PhotoGallery from '../components/PhotoGallery'
 import { useFestival } from '../lib/data'
 import { supabase } from '../lib/supabase'
-import { POLL_MS, centsToDollars, useCatalog, usePoll, useRemembered, useServerNow } from '../lib/auction'
+import { POLL_MS, centsToDollars, itemPhotos, useCatalog, usePoll, useRemembered, useServerNow } from '../lib/auction'
 import {
   auctionApi,
   bidLine,
@@ -68,6 +69,7 @@ export default function AuctionItem() {
       </>
     )
   }
+  if (!cat.enabled) return <AuctionClosed />
   if (!item) {
     return (
       <>
@@ -86,6 +88,7 @@ export default function AuctionItem() {
 
   const settings = cat.settings
   const closed = whyClosed(item, settings, now)
+  const photos = itemPhotos(item)
   const facts = [
     item.donated_by ? { k: 'Donated by', v: item.donated_by } : null,
     item.value_cents ? { k: 'Value', v: money(item.value_cents) } : null,
@@ -96,10 +99,14 @@ export default function AuctionItem() {
     <>
       <PageTitle title={item.title} icon="award" crumbs={crumbs} />
       <Container className="mt-8">
-        {/* On a phone the bidding box comes right after the photo — the answer first, the history after. */}
+        {/* On a phone the bidding box comes right after the photos — the answer first, the history after. */}
         <div className="grid gap-6 lg:grid-cols-[1fr_24rem] lg:gap-x-8">
           <div className="min-w-0 lg:col-start-1">
-            <ItemPhoto item={item} className="aspect-[4/3] w-full rounded-2xl" />
+            {photos.length > 0 ? (
+              <PhotoGallery key={item.id} photos={photos} alt={item.title} />
+            ) : (
+              <ItemPhoto item={item} className="aspect-[4/3] w-full rounded-2xl" />
+            )}
           </div>
 
           <div className="space-y-4 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:sticky lg:top-4 lg:self-start">

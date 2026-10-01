@@ -623,6 +623,8 @@ export interface AuctionItem {
   donatedBy: string | null
   valueCents: number | null
   photoUrl: string | null
+  /** Every photo, cover first (update 37); auction items only. */
+  photoUrls?: string[]
   session: string
   status: string
 }
@@ -643,12 +645,13 @@ export function useAuction(eventSlug: string | undefined): Loadable<Auction> {
         donated_by: string | null
         value_cents: number | null
         photo_url: string | null
+        photo_urls: string[] | null
         session: string | null
         status: string
       }>(
         supabase
           .from('raffle_items')
-          .select('id,title,description,donated_by,value_cents,photo_url,session,status')
+          .select('id,title,description,donated_by,value_cents,photo_url,photo_urls,session,status')
           .eq('event_slug', eventSlug!)
           .eq('is_published', true)
           .order('sort_order'),
@@ -685,7 +688,7 @@ export function useAuction(eventSlug: string | undefined): Loadable<Auction> {
       status: r.status,
     })
     return {
-      items: items.map((r) => map(r, r.session ?? 'all-day')),
+      items: items.map((r) => ({ ...map(r, r.session ?? 'all-day'), photoUrls: Array.isArray(r.photo_urls) ? r.photo_urls : [] })),
       prizes: prizes.map((r) => map(r, 'raffle')),
       settings: {
         intro: str(settings[0]?.intro_text) ?? null,
@@ -792,6 +795,36 @@ export function useOrg(): Loadable<Org> {
     const v = data[0]?.value ?? {}
     return { email: str(v.email) ?? OHRR_EMAIL_FALLBACK, ein: str(v.ein) ?? null }
   })
+}
+
+/* ------------------------------------------------------ feature switches */
+
+/** A switch's stored value: `{"enabled": false}` is off; anything else (or no row) is on. */
+export function switchOn(value: unknown): boolean {
+  const v = value && typeof value === 'object' ? (value as Record<string, unknown>).enabled : undefined
+  return typeof v === 'boolean' ? v : true
+}
+
+/**
+ * Is the Silent Auction switched on? OHRR's Founders and Developers can switch
+ * it off (Staff → Features, app_settings "silent_auction_enabled"); a missing
+ * row means on. Undefined while it loads, so no auction link shows and then
+ * vanishes. A failed read counts as on — auction_catalog() also says when the
+ * auction is off (update 38), and the auction pages listen to that too.
+ */
+export function useSilentAuctionOn(): boolean | undefined {
+  const s = useLoad('switch:silent_auction_enabled', async () => {
+    const { data, error } = await supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'silent_auction_enabled')
+      .limit(1)
+      .maybeSingle()
+    if (error) throw error
+    return switchOn((data as { value?: unknown } | null)?.value)
+  })
+  if (s.loading) return undefined
+  return s.error ? true : (s.data ?? true)
 }
 
 /* --------------------------------------------------------------- archive */

@@ -66,6 +66,17 @@ export function destOf(link: string): Dest {
   return { href: `${OHRR_SITE}${web[path] ?? path}` }
 }
 
+/**
+ * Does a link OHRR typed lead to the silent auction — this site's or the
+ * website's? Those are hidden while the Silent Auction is switched off.
+ */
+export function isAuctionLink(link: string): boolean {
+  const d = destOf(link)
+  const auction = /^\/(?:bunfest\/)?auction(?:[/?#]|$)/
+  if ('to' in d) return auction.test(d.to)
+  return d.href.startsWith(`${OHRR_SITE}/`) && auction.test(d.href.slice(OHRR_SITE.length))
+}
+
 /** "example.com" from a web address, for showing a link as readable text. */
 export function hostOf(url: string): string {
   try {
